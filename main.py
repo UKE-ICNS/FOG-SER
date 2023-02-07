@@ -520,11 +520,14 @@ for i in range(len(A1)):
         if A1[i,j]!=-1:
             mn3[i,j]=None
 
+ac_prop = np.nansum(np.dstack((mn3,mn1)),2)
+ac_prop[ac_prop==0]=None
+
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 figure = pyplot.figure()
-ax = sns.heatmap(mn1, cbar_kws={'label': 'Property'}, xticklabels=plot_state, yticklabels=plot_state, cmap=plt.get_cmap("Dark2", 4), vmin=1, vmax=4, linewidth=0.5, square=True, cbar=False)#.set_title("Distance to healthy")
+ax = sns.heatmap(ac_prop, cbar_kws={'label': 'Property'}, xticklabels=plot_state, yticklabels=plot_state, cmap=plt.get_cmap("Dark2", 4), vmin=1, vmax=4, linewidth=0.5, square=True, cbar=False)#.set_title("Distance to healthy")
 plt.ylabel("Region") 
 plt.xlabel("Region state on the next step")
 divider = make_axes_locatable(ax) 
@@ -537,61 +540,4 @@ cbar.ax.tick_params(axis='y', which='major', length=0, pad=15)
 #cbar.outline.set_linewidth(2)
 ax.set_title('Distance to healthy')
 plt.tight_layout()
-plt.show()
-#%% correlate +1 activities in regions - artifact of the last value! #CHANGE ==2!!!
-tr_for_high1 = c_ar_sq
-
-matr1 = np.zeros((len(tr_for_high1), len(tr_for_high1[0]),len(tr_for_high1[0])))
-
-for numb in range(len(tr_for_high1)):
-
-    tr_for_high_first = tr_for_high1[numb]
-    tr_for_high_first_sh = np.zeros_like(tr_for_high_first)
-
-    cor_mat = np.zeros((len(tr_for_high_first), len(tr_for_high_first)))
-
-    for i in range(len(tr_for_high_first)):
-        for j in range(len(tr_for_high_first)):
-            tr_for_high_first_sh[j,:] = np.roll(tr_for_high_first[j,:], -1)
-            cor_mat[i,j]=np.sum(tr_for_high_first[i,:]==tr_for_high_first_sh[j,:])/np.shape(tr_for_high_first)[1]
-
-    matr1[numb] = cor_mat
-
-mean_matr_coactiv1 = np.mean(matr1, axis=0)
-
-#%% plot coactivation patterns
-
-figure = pyplot.figure()
-ax = sns.heatmap(mean_matr_coactiv1, cbar_kws={'label': 'Coactivation strength'}, xticklabels=plot_state, yticklabels=plot_state).set_title("Coactivation matrix (the regions are shifted to +1)")
-plt.ylabel("Region")
-plt.xlabel("Region state on the next step")
-plt.show()
-
-#%% correlate -1 activities in regions - artifact of the first value! #CHANGE ==2!!!
-tr_for_high2 = c_ar_sq[kmeans.labels_[:np.shape(per)[0]]==2,:,:]
-
-matr2 = np.zeros((len(tr_for_high2), len(tr_for_high2[0]),len(tr_for_high2[0])))
-
-for numb in range(len(tr_for_high2)):
-
-    tr_for_high_first = tr_for_high2[numb]
-    tr_for_high_first_sh = np.zeros_like(tr_for_high_first)
-
-    cor_mat = np.zeros((len(tr_for_high_first), len(tr_for_high_first)))
-
-    for i in range(len(tr_for_high_first)):
-        for j in range(len(tr_for_high_first)):
-            tr_for_high_first_sh[j,:] = np.roll(tr_for_high_first[j,:], 1)
-            cor_mat[i,j]=np.sum(tr_for_high_first[i,:]==tr_for_high_first_sh[j,:])/np.shape(tr_for_high_first)[1]
-
-    matr2[numb] = cor_mat
-
-mean_matr_coactiv2 = np.mean(matr2, axis=0)
-
-#%% plot coactivation patterns - SAME AS TRANSPOSED VERSION OF PREVIOUS MATRIX
-
-figure = pyplot.figure()
-ax = sns.heatmap(mean_matr_coactiv2, cbar_kws={'label': 'Coactivation strength'}, xticklabels=plot_state, yticklabels=plot_state).set_title("Coactivation matrix (the regions are shifted to -1)")
-plt.ylabel("Region")
-plt.xlabel("Region state on the previous step")
 plt.show()
