@@ -297,6 +297,9 @@ attractor_counts_stn = stn_c
 attractor_space_ssnr = ssnr_sp
 attractor_counts_ssnr = ssnr_c
 
+now_dbs = attractor_space_stn
+now_dbs_counts = attractor_counts_stn
+
 counter = 0
 overlap = np.array([])
 overlap1 = np.array([])
@@ -319,14 +322,14 @@ counter1 = 0
 overlap2 = np.array([])
 overlap3 = np.array([])
 compare_h = attractor_space_h
-compare_stn = attractor_space_stn
+compare_stn = now_dbs
 ind_stn = np.array([])
 for i in range(len(compare_h)):
     for j in range(len(compare_stn)):
         if np.sum(compare_h[i] == compare_stn[j]) == 36:
             counter1 += 1
             overlap2 = np.append(overlap2, attractor_counts_h[i])
-            overlap3 = np.append(overlap3, attractor_counts_stn[j])
+            overlap3 = np.append(overlap3, now_dbs_counts[j])
             ind_stn = np.append(ind_stn, j)
 
 print("--------stn/pd")
@@ -344,7 +347,7 @@ for i in range(len(compare_pd)):
         if np.sum(compare_pd[i] == compare_stn[j]) == 36:
             counter2 += 1
             overlap4 = np.append(overlap4, attractor_counts_pd[i])
-            overlap5 = np.append(overlap5, attractor_counts_stn[j])
+            overlap5 = np.append(overlap5, now_dbs_counts[j])
             ind_i = np.append(ind_i, j)
 
 # calculate the intersection of sets
@@ -361,7 +364,7 @@ for i in range(len(attractor_space_pd)):
                     counter3 += 1
                     overlap6 = np.append(overlap6, attractor_counts_pd[i])
                     overlap7 = np.append(overlap7, attractor_counts_h[j])
-                    overlap8 = np.append(overlap8, attractor_counts_stn[k])
+                    overlap8 = np.append(overlap8, now_dbs_counts[k])
 
 # calculate capacity of intersects
 all_ands = counter3
@@ -370,7 +373,7 @@ h_and_stn_notall = counter1 - all_ands
 pd_and_stn_notall = counter2 - all_ands
 h_notall = len(attractor_space_h) - counter - counter1 + all_ands
 pd_notall = len(attractor_space_pd) - counter - counter2 + all_ands
-stn_notall = len(attractor_space_stn) - counter1 - counter2 + all_ands
+stn_notall = len(compare_stn) - counter1 - counter2 + all_ands
 #%% plot venn2
 # Use the venn2 function
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 15))
@@ -470,7 +473,7 @@ fig.tight_layout()
 plt.show()
 #%% venn
 # Use the venn3 function
-fig, (ax1) = plt.subplots(1, 1, figsize=(15, 20))
+fig, (ax1,ax2) = plt.subplots(1, 2, figsize=(23, 15))
 out = venn3(
     subsets=(
         pd_notall,
@@ -481,26 +484,74 @@ out = venn3(
         h_and_stn_notall,
         all_ands,
     ),
-    set_labels=("PD", "Healthy", "STN-DBS"),
+    set_labels=("PD", "Healthy", "STN DBS"),
     alpha=0.7,
     ax=ax1,
 )
 for text in out.set_labels:
-    text.set_fontsize(34)
+    text.set_fontsize(38)
 
 for text in out.subset_labels:
-    text.set_fontsize(34)
+    text.set_fontsize(38)
 # out.get_label_by_id('10').set_text('85131\n53 attr')
 out.get_patch_by_id("10").set_color("#ee6c4d")
 out.get_patch_by_id("11").set_color("#e0fbfc")
 out.get_patch_by_id("01").set_color("#98c1d9")
 out.get_patch_by_id("101").set_color("#3d5a80")
 out.get_patch_by_id("001").set_color("#ffb703")
-ax1.set_title("Number of attractors", size=38)
+ax1.set_title("Number of period-3 limit cycles", size=38)
 
-plt.suptitle("Healthy, PD and STN+SNr-DBS attractor spaces", fontsize=38)
-fig.tight_layout()
-# plt.savefig(f'Animations/venn3_snr.pdf', dpi=600,transparent=True)
+labels = ["PD", "Healthy", "STN DBS"]
+alls = [
+    np.sum(overlap6) / np.sum(attractor_counts_pd),
+    np.sum(overlap7) / np.sum(attractor_counts_h),
+    np.sum(overlap8) / np.sum(now_dbs_counts),
+]
+un = [
+    1 - (np.sum(overlap6) + (np.sum(overlap1) - np.sum(overlap6)) + (np.sum(overlap4) - np.sum(overlap6))) / np.sum(attractor_counts_pd),
+    1 - (np.sum(overlap7) + (np.sum(overlap) - np.sum(overlap7)) + (np.sum(overlap2) - np.sum(overlap7))) / np.sum(attractor_counts_h),
+    1 - (np.sum(overlap8) + (np.sum(overlap5) - np.sum(overlap8)) + (np.sum(overlap3) - np.sum(overlap8))) / np.sum(now_dbs_counts),
+]
+with1 = [
+    (np.sum(overlap1) - np.sum(overlap6)) / np.sum(attractor_counts_pd),
+    (np.sum(overlap) - np.sum(overlap7)) / np.sum(attractor_counts_h),
+    (np.sum(overlap5) - np.sum(overlap8)) / np.sum(now_dbs_counts) #pd and stn
+]
+with2 = [
+    (np.sum(overlap4) - np.sum(overlap6)) / np.sum(attractor_counts_pd), #pd and stn
+    (np.sum(overlap2) - np.sum(overlap7)) / np.sum(attractor_counts_h),
+    (np.sum(overlap3) - np.sum(overlap8)) / np.sum(now_dbs_counts) #h and stn
+]
+
+width = 0.35  # the width of the bars: can also be len(x) sequence
+
+barlist1 = ax2.bar(labels, alls, width, label="Common", alpha=0.7)
+barlist2 = ax2.bar(labels, with1, width, bottom=alls, label="with1", alpha=0.7)
+barlist3 = ax2.bar(labels, with2, width, bottom=np.array(with1)+np.array(alls), label='with2',alpha=0.7)
+barlist4 = ax2.bar(labels, un, width, bottom=np.array(with2)+np.array(alls)+np.array(with1), label='Unique',alpha=0.7)
+barlist1[0].set_color("#653265")
+barlist1[1].set_color("#653265")
+barlist1[2].set_color("#653265")
+barlist4[0].set_color("#ee6c4d")
+barlist4[1].set_color("#98c1d9")
+barlist4[2].set_color("#ffb703")
+barlist2[0].set_color("#e0fbfc")
+barlist2[1].set_color("#e0fbfc")
+barlist2[2].set_color("#3d5a80")
+barlist3[0].set_color("#3d5a80")
+barlist3[1].set_color("#0058b3")
+barlist3[2].set_color("#0058b3")
+
+ax2.set_ylabel("Fraction", fontsize=34)
+ax2.tick_params(axis="x", labelsize=34)
+ax2.tick_params(axis="y", labelsize=34)
+ax2.spines['right'].set_visible(False)
+ax2.spines['top'].set_visible(False)
+ax2.set_title("Basins of attraction", size=38)
+
+plt.suptitle("Healthy, PD and STN DBS", fontsize=38,fontweight="bold")
+#fig.tight_layout()
+plt.savefig(f'Animations/venn3_stn_upd1.pdf', dpi=600,transparent=True)
 plt.show()
 
 #%% calculate coactivation matrices
@@ -534,7 +585,7 @@ ax = sns.heatmap(
     cbar_kws={"label": "Coactivation strength"},
     xticklabels=plot_state,
     yticklabels=plot_state,
-).set_title("Coactivation matrix, healthy")
+cmap="Reds").set_title("Coactivation matrix, healthy")
 plt.ylabel("Region")
 plt.xlabel("Region")
 plt.show()
@@ -545,7 +596,7 @@ ax = sns.heatmap(
     cbar_kws={"label": "Coactivation strength"},
     xticklabels=plot_state,
     yticklabels=plot_state,
-).set_title("Coactivation matrix, PD")
+cmap="Reds").set_title("Coactivation matrix, PD")
 plt.ylabel("Region")
 plt.xlabel("Region")
 plt.show()
@@ -572,6 +623,64 @@ plt.ylabel("Region")
 plt.xlabel("Region")
 plt.show()
 
+#%% Re-order FC to get modules visible
+import bct
+from netneurotools import plotting
+
+tr = 0.6
+
+h_cl = coact_h.astype(np.float64)
+
+ci, Q = bct.community_louvain(h_cl, gamma=tr)
+num_ci = len(np.unique(ci))
+print(ci)
+print('For healthy state: {} clusters detected with a modularity of {:.2f}.'.format(num_ci, Q))
+
+fig, ax1 = plt.subplots(figsize=(20, 15))
+ax1=plotting.plot_mod_heatmap(h_cl, ci, cmap='rocket',xticklabels=plot_state, yticklabels=plot_state,mask_diagonal=False,square=False,edgecolor=(0, 0, 0, 0))
+ax1.set_title('Coactivation matrix, healthy',fontweight="bold")
+#fig.tight_layout()
+plt.savefig(f'Animations/try.pdf', dpi=600,transparent=True)
+plt.show()
+
+pd_cl = coact_pd.astype(np.float64)
+
+ci, Q = bct.community_louvain(pd_cl, gamma=tr)
+num_ci = len(np.unique(ci))
+print(ci)
+print('For PD state: {} clusters detected with a modularity of {:.2f}.'.format(num_ci, Q))
+
+fig, ax1 = plt.subplots(figsize=(20, 15))
+ax1 = plotting.plot_mod_heatmap(pd_cl, ci, cmap='rocket',xticklabels=plot_state, yticklabels=plot_state,mask_diagonal=False,square=False,edgecolor=(0, 0, 0, 0))
+ax1.set_title('Coactivation matrix, PD',fontweight="bold")
+plt.savefig(f'Animations/try1.pdf', dpi=600,transparent=True)
+plt.show()
+
+stn_cl = coact_stn.astype(np.float64)
+
+ci, Q = bct.community_louvain(stn_cl, gamma=tr)
+num_ci = len(np.unique(ci))
+print(ci)
+print('For STN-DBS state: {} clusters detected with a modularity of {:.2f}.'.format(num_ci, Q))
+
+fig, ax1 = plt.subplots(figsize=(20, 15))
+ax1 = plotting.plot_mod_heatmap(stn_cl, ci, cmap='rocket',xticklabels=plot_state, yticklabels=plot_state,mask_diagonal=False,square=False,edgecolor=(0, 0, 0, 0))
+ax1.set_title('Coactivation matrix, STN DBS',fontweight="bold")
+plt.savefig(f'Animations/try2.pdf', dpi=600,transparent=True)
+plt.show()
+
+ssnr_cl = coact_ssnr.astype(np.float64)
+
+ci, Q = bct.community_louvain(ssnr_cl, gamma=tr)
+num_ci = len(np.unique(ci))
+print(ci)
+print('For STN+SNr-DBS state: {} clusters detected with a modularity of {:.2f}.'.format(num_ci, Q))
+
+fig, ax1 = plt.subplots(figsize=(20, 15))
+ax1 = plotting.plot_mod_heatmap(ssnr_cl, ci, cmap='rocket',xticklabels=plot_state, yticklabels=plot_state,mask_diagonal=False,square=False,edgecolor=(0, 0, 0, 0))
+ax1.set_title('Coactivation matrix, STN+SNr DBS',fontweight="bold")
+plt.savefig(f'Animations/try3.pdf', dpi=600,transparent=True)
+plt.show()
 #%% Calculate distances between network configurations
 
 l_h_stn = np.mean(np.abs(coact_h - coact_stn))
