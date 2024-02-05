@@ -18,6 +18,7 @@ from funcs import coact
 from funcs import coact_sh
 from funcs import coact40
 from SER import SERmodel_multneuro
+import bct 
 
 start_time = time.time()
 
@@ -43,6 +44,22 @@ A1 = np.array(
     ]
 )  # directed FOG network
 # (LC,PRF,CNF,PPN,SNr,STN,GPi,GPe,Str,Ctx,SNc,Th)
+
+#The matrix used for a random null test
+# A1 = np.array([[ 0,  0,  1,  0,  0,  1,  0,  0,  1,  0,  0,  1],
+#        [ 0,  0,  0,  0,  1,  1,  0,  1,  0,  1,  1,  0],
+#        [ 0,  1,  0,  1,  0,  0,  0,  0,  0,  1,  0,  1],
+#        [ 1,  1,  1,  0,  1,  1,  1,  0,  1,  1,  1,  0],
+#        [ 0,  0, -1,  0,  0, -1, -1, -1, -1,  0, -1,  0],
+#        [ 1,  1,  0,  0,  1,  0,  1,  1,  1,  1,  1,  0],
+#        [ 0, -1,  0, -1, -1,  0,  0, -1, -1, -1, -1, -1],
+#        [ 0,  0,  0,  0, -1, -1, -1, -1, -1,  0, -1, -1],
+#        [ 0,  0,  0, -1, -1,  0,  0, -1, -1,  0, -1,  0],
+#        [ 0,  1,  0,  1,  1,  0,  0,  1,  0,  1,  1,  1],
+#        [ 0, -1,  0,  1, -1,  0, -1,  0, -1,  0,  0,  0],
+#        [ 0,  1,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0]])
+
+#A1 = bct.randmio_dir_signed(A1,itr=5)[0] #to generate a randomize matrix
 
 # FoG PD matrix
 A2 = np.array(
@@ -297,8 +314,8 @@ attractor_counts_stn = stn_c
 attractor_space_ssnr = ssnr_sp
 attractor_counts_ssnr = ssnr_c
 
-now_dbs = attractor_space_stn
-now_dbs_counts = attractor_counts_stn
+now_dbs = attractor_space_ssnr
+now_dbs_counts = attractor_counts_ssnr
 
 counter = 0
 overlap = np.array([])
@@ -388,15 +405,15 @@ out = venn2(
     ax=ax1,
 )
 for text in out.set_labels:
-    text.set_fontsize(26)
+    text.set_fontsize(36)
 
 for text in out.subset_labels:
-    text.set_fontsize(26)
+    text.set_fontsize(36)
 # out.get_label_by_id('10').set_text('85131\n53 attr')
 out.get_patch_by_id("10").set_color("#ee6c4d")
 out.get_patch_by_id("11").set_color("#e0fbfc")
 out.get_patch_by_id("01").set_color("#98c1d9")
-ax1.set_title("Number of attractors", size=28)
+ax1.set_title("Number of attractors", size=38)
 
 
 labels = ["PD", "Healthy"]
@@ -418,17 +435,17 @@ barlist1[1].set_color("#e0fbfc")
 barlist2[0].set_color("#ee6c4d")
 barlist2[1].set_color("#98c1d9")
 
-ax2.set_ylabel("Fraction", fontsize=24)
-ax2.tick_params(axis="x", labelsize=24)
-ax2.tick_params(axis="y", labelsize=24)
-ax2.set_title("Basins of attraction", size=26)
+ax2.set_ylabel("Fraction", fontsize=34)
+ax2.tick_params(axis="x", labelsize=34)
+ax2.tick_params(axis="y", labelsize=34)
+ax2.set_title("Basins of attraction", size=36)
 
 (m1,) = ax2.plot(
     [],
     [],
     c="#ee6c4d",
     marker="s",
-    markersize=28,
+    markersize=38,
     fillstyle="left",
     linestyle="none",
     markeredgecolor="black",
@@ -440,7 +457,7 @@ ax2.set_title("Basins of attraction", size=26)
     [],
     c="#98c1d9",
     marker="s",
-    markersize=28,
+    markersize=38,
     fillstyle="right",
     linestyle="none",
     markeredgecolor="black",
@@ -454,7 +471,7 @@ ax2.set_title("Basins of attraction", size=26)
     [],
     c="#e0fbfc",
     marker="s",
-    markersize=28,
+    markersize=38,
     linestyle="none",
     markeredgecolor="black",
     alpha=0.7,
@@ -467,7 +484,7 @@ ax2.legend(
 )
 
 
-plt.suptitle("Healthy and PD attractor space", fontsize=28)
+plt.suptitle("Healthy and PD", fontsize=38, weight='bold')
 fig.tight_layout()
 # plt.savefig(f'Animations/venn2.pdf', dpi=600,transparent=True)
 plt.show()
@@ -484,7 +501,7 @@ out = venn3(
         h_and_stn_notall,
         all_ands,
     ),
-    set_labels=("PD", "Healthy", "STN DBS"),
+    set_labels=("PD", "Healthy", "STN+SNr DBS"),
     alpha=0.7,
     ax=ax1,
 )
@@ -501,7 +518,7 @@ out.get_patch_by_id("101").set_color("#3d5a80")
 out.get_patch_by_id("001").set_color("#ffb703")
 ax1.set_title("Number of period-3 limit cycles", size=38)
 
-labels = ["PD", "Healthy", "STN DBS"]
+labels = ["PD", "Healthy", "STN+SNr DBS"]
 alls = [
     np.sum(overlap6) / np.sum(attractor_counts_pd),
     np.sum(overlap7) / np.sum(attractor_counts_h),
@@ -549,7 +566,7 @@ ax2.spines['right'].set_visible(False)
 ax2.spines['top'].set_visible(False)
 ax2.set_title("Basins of attraction", size=38)
 
-plt.suptitle("Healthy, PD and STN DBS", fontsize=38,fontweight="bold")
+plt.suptitle("Healthy, PD and STN+SNr DBS", fontsize=38,fontweight="bold")
 #fig.tight_layout()
 plt.savefig(f'Animations/venn3_stn_upd1.pdf', dpi=600,transparent=True)
 plt.show()
@@ -705,7 +722,7 @@ plt.bar(plot_state1, dif_h, label="Distance to healthy", color="#d35f5f", width=
 plt.ylim(0)
 plt.xlabel("Stimulation sites")
 plt.ylabel("Distance, a.u.")
-plt.title("Distances between network configurations")
+plt.title("Distances between network configurations", fontweight="bold")
 plt.legend(loc="lower left")
 fig.tight_layout()
 # plt.savefig(f'Animations/dist1.pdf', dpi=600,transparent=True)
@@ -819,4 +836,58 @@ cbar.ax.tick_params(axis="y", which="major", length=0, pad=15)
 # cbar.outline.set_linewidth(2)
 ax.set_title("Distance to healthy")
 plt.tight_layout()
+plt.show()
+#%% For the frequency plot in supp
+#frequency
+h_freq = np.sum(np.sum(h[:,:,:]==1,axis=2),axis=0)/((3**12)*100)
+pd_freq = np.sum(np.sum(pd[:,:,:]==1,axis=2),axis=0)/((3**12)*100)
+stn_freq = np.sum(np.sum(stn[:,:,:]==1,axis=2),axis=0)/((3**12)*100)
+ssnr_freq = np.sum(np.sum(ssnr[:,:,:]==1,axis=2),axis=0)/((3**12)*100)
+
+#frequency limit cycles
+h_freq_lc = np.sum(np.sum(h[indd_h,:,:]==1,axis=2),axis=0)/((len(indd_h))*100)
+pd_freq_lc = np.sum(np.sum(pd[indd_pd,:,:]==1,axis=2),axis=0)/((len(indd_pd))*100)
+stn_freq_lc = np.sum(np.sum(stn[indd_stn,:,:]==1,axis=2),axis=0)/((len(indd_stn))*100)
+ssnr_freq_lc = np.sum(np.sum(ssnr[indd_ssnr,:,:]==1,axis=2),axis=0)/((len(indd_ssnr))*100)
+
+#%% figs
+
+figure = pyplot.figure(figsize=(15, 10))
+plt.axhline(y=0, color='black', linestyle='dashdot', linewidth=5, label='Threshold')
+plt.plot(plot_state, np.sum(A1, axis=0),label='Healthy', c="#98c1d9", linewidth=7)
+plt.plot(plot_state, np.sum(A2, axis=0),label='PD',c="#ee6c4d", linewidth=7)
+plt.plot(plot_state, np.sum(adj_stn.T, axis=0),label='STN DBS',c='#e6ab02', linewidth=7)
+plt.plot(plot_state, np.sum(adj_ssnr.T, axis=0),label='STN+SNr DBS',c="#7570b3", linewidth=7)
+plt.xlabel("Region",fontsize=34)
+plt.ylabel("Effective degree",fontsize=34)
+plt.legend(loc="lower left")
+plt.tight_layout()
+#plt.title('multiple plots')
+plt.savefig(f'Animations/ef_def.pdf', dpi=600,transparent=True)
+plt.show()
+
+figure = pyplot.figure(figsize=(15, 10))
+plt.plot(plot_state, h_freq, label='Healthy', c="#98c1d9", linewidth=7)
+plt.plot(plot_state, pd_freq, label='PD',c="#ee6c4d", linewidth=7)
+plt.plot(plot_state, stn_freq, label='STN DBS',c='#e6ab02', linewidth=7)
+plt.plot(plot_state, ssnr_freq, label='STN+SNr DBS',c="#7570b3", linewidth=7)
+plt.xlabel("Region",fontsize=34)
+plt.ylabel("Excitation frequency",fontsize=34)
+plt.legend(loc="lower left")
+plt.tight_layout()
+#plt.title('multiple plots')
+plt.savefig(f'Animations/freq.pdf', dpi=600,transparent=True)
+plt.show()
+
+figure = pyplot.figure(figsize=(15, 10))
+plt.plot(plot_state, h_freq_lc, label='Healthy', c="#98c1d9",linewidth=7)
+plt.plot(plot_state, pd_freq_lc, label='PD',c="#ee6c4d",linewidth=7)
+plt.plot(plot_state, stn_freq_lc, label='STN DBS',c='#e6ab02',linewidth=7)
+plt.plot(plot_state, ssnr_freq_lc, label='STN+SNr DBS',c="#7570b3",linewidth=7)
+plt.xlabel("Region",fontsize=34)
+plt.ylabel("Excitation frequency, limit cycles",fontsize=34)
+plt.legend(loc="lower left")
+plt.tight_layout()
+#plt.title('multiple plots')
+plt.savefig(f'Animations/freq_lm.pdf', dpi=600,transparent=True)
 plt.show()
